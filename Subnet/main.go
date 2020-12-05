@@ -33,19 +33,30 @@ func parse(query string) {
 	}
 	maskArr := datasheet[netmaskInt]
 	nextNetworkID := 0
-	for i := 0; i < ipaddInt; i += maskArr[0] {
+	for i := 0; i <= ipaddInt; i += maskArr[0] {
 		nextNetworkID += maskArr[0]
 	}
+
 	nsp := querySplit[0][:len(querySplit[0])-3]
 
-	fmt.Printf("Next Network ID : %s.%d\n", nsp, nextNetworkID)
+	if nextNetworkID == 256 {
+		nextOctet := strings.Split(nsp, ".")[2]
+		nextOctetInt, err := strconv.Atoi(nextOctet)
+		nsp = nsp[:len(nsp)-3]
+		if err != nil {
+			return
+		}
+		fmt.Printf("Next Network ID : %s.%d.0\n", nsp, nextOctetInt+1)
+	} else {
+		fmt.Printf("Next Network ID : %s.%d\n", nsp, nextNetworkID)
+	}
 	fmt.Printf("Network ID : %s.%d\n", nsp, nextNetworkID-maskArr[0])
 	fmt.Printf("Broadcast IP : %s.%d\n", nsp, nextNetworkID-1)
 	fmt.Printf("First IP : %s.%d\n", nsp, nextNetworkID-maskArr[0]+1)
-	fmt.Printf("Last IP : %s.%d\n", nsp, nextNetworkID-1)
+	fmt.Printf("Last IP : %s.%d\n", nsp, nextNetworkID-2)
 	fmt.Printf("Range of IP address : %d\n", maskArr[0])
 	fmt.Printf("Range of usable IP address : %d\n", maskArr[0]-2)
-	fmt.Printf("CIDR/Subnet : %d\n", netmaskInt)
+	fmt.Printf("CIDR/Subnet : 255.255.255.%d\n", maskArr[1])
 	return
 }
 
