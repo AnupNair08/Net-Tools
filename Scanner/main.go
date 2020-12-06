@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"math"
+	"net"
 	"strconv"
 	"sync"
 	"time"
@@ -10,6 +12,11 @@ import (
 )
 
 var hosts []string
+
+type LocalIP struct {
+	ipaddr  string
+	netmask float64
+}
 
 func callPing(IP string) bool {
 	var flag int
@@ -36,15 +43,43 @@ func callPing(IP string) bool {
 	return true
 }
 
+func getHosts(subnet net.IPMask) float64 {
+	a, b, c, d := float64(subnet[3]), float64(subnet[2]), float64(subnet[1]), float64(subnet[0])
+	k := math.Logb(256-a) + math.Logb(256-b) + math.Logb(256-c) + math.Logb(256-d)
+	return math.Pow(2.0, k)
+}
+
+func getLocalIP() LocalIP {
+	var res LocalIP
+	query, err := net.Dial("udp", "8.8.8.8:80")
+	if err != nil {
+		fmt.Println(err)
+		return res
+	} else {
+		addr := query.LocalAddr().(*net.UDPAddr)
+		// fmt.Println(net.IPMask(addr.IP))
+		ip := strconv.Itoa(int(addr.IP[0])) + "." + strconv.Itoa(int(addr.IP[1])) + "." + strconv.Itoa(int(addr.IP[2]))
+		res.ipaddr = ip
+		res.netmask = getHosts(addr.IP.DefaultMask())
+		return res
+	}
+
+}
+
 //TODO
-// Fetch IP, subnet automatically and run loops dynmaically
 // Add multithreading to get over performance problem
 func main() {
 	var wg sync.WaitGroup
 	// op, err := exec.Command("ipconfig").Output()
+	local := getLocalIP()
+	selfIP := local.ipaddr
+	hostNo := int(local.netmask)
+	fmt.Println(hostNo, selfIP)
 	fmt.Println("Scanning.....")
-	for i := 200; i < 210; i++ {
-		callPing("192.168.1." + strconv.Itoa(i))
+	k := 256 - hostNo
+	for i := 0; i < 10; i++ {
+		callPing(selfIP + "." + strconv.Itoa(k))
+		k++
 	}
 
 	wg.Wait()
