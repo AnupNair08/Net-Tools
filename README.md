@@ -35,3 +35,14 @@ This tool allows the user to view all the devices that are connected to the same
 cd Scanner
 go run main.go
 ```
+
+## HTTP Client
+
+A simple command line tool that lets you download resources over HTTP. The tool takes the website address and path of the resource on the server and downloads the resource on the host machine.
+
+#### To use the client program
+
+```
+cd Scanner
+go run main.go sitename path resource
+```
