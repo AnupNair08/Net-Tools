@@ -7,6 +7,8 @@ import (
 	"unicode"
 )
 
+var piece int = 0
+
 func parseInt(data string, index int) (int, int) {
 	i := index
 	value := ""
@@ -24,16 +26,33 @@ func parseInt(data string, index int) (int, int) {
 
 func parseString(data string, index int, prev int) (string, int) {
 	k := index - 1
-	for unicode.IsDigit(rune(data[k])) && k > prev {
+	for k >= 0 && unicode.IsDigit(rune(data[k])) && k > prev {
 		k--
 	}
 	l, err := strconv.Atoi(data[k+1 : index])
 	if err != nil {
-		fmt.Println(err)
-		fmt.Println("Failed to parse")
-		return "", index
+		return " ", index + 1
 	}
-	return data[index+1 : index+l+1], index + l
+	if l == 0 {
+		return " ", index + 2
+	}
+	if piece == 1 {
+		piece = 2
+	}
+	if data[index+1:index+l+1] == "pieces" {
+		piece = 1
+	}
+	if piece == 2 {
+		temp := ""
+		s := data[index+1 : index+l+1]
+		for m := 0; m < len(s); m++ {
+			temp += fmt.Sprintf("%x ", s[m])
+		}
+		piece = 0
+		return temp, index + l
+	} else {
+		return data[index+1 : index+l+1], index + l
+	}
 }
 
 func parseList(data string, index int) ([]interface{}, int) {
@@ -49,7 +68,10 @@ func parseList(data string, index int) ([]interface{}, int) {
 			s, j := parseString(data, i, prev)
 			arr = append(arr, s)
 			i = j - 1
-			prev = j
+			if s != " " {
+				prev = j
+				arr = append(arr, s)
+			}
 		} else if data[i] == 'd' {
 			s, j := parseDict(data, i+1)
 			arr = append(s)
@@ -68,8 +90,13 @@ func parseDict(data string, index int) ([]interface{}, int) {
 		if data[i] == ':' && unicode.IsDigit(rune(data[i-1])) {
 			s, j := parseString(data, i, prev)
 			i = j - 1
-			prev = j
-			dict = append(dict, s)
+			if s != " " {
+				prev = j
+				dict = append(dict, s)
+			}
+			if s[len(s)-1] == 'e' {
+				i++
+			}
 		} else if data[i] == 'i' {
 			s, j := parseInt(data, i+1)
 			i = j
@@ -97,13 +124,23 @@ func main() {
 	data := string(d)
 	// data := "d8:announce40:udp://tracker.leechers-paradise.org:696913:announce-liste"
 	// data := "d4:infod5:filesld6:lengthi140e4:pathl21:Big Buck Bunny.en.srted6:lengthi276134947e4:pathl18:Big Buck Bunny.mp4ed6:lengthi310380e4:pathl10:poster.jpgeeeeeee"
+	// data = "d3:nam2:ome"
 	prev := 0
 	for i := 0; i < len(data); i++ {
 		if data[i] == ':' && unicode.IsDigit(rune(data[i-1])) {
 			s, j := parseString(data, i, prev)
 			i = j - 1
-			prev = j
-			fmt.Println(s)
+			if s != " " {
+				prev = j
+			}
+			if piece == 2 {
+				for m := 0; m < len(s); m++ {
+					fmt.Printf("%x ", s[m])
+				}
+				piece = 0
+			} else {
+				fmt.Println(s)
+			}
 		} else if data[i] == 'i' {
 			s, j := parseInt(data, i+1)
 			i = j
@@ -117,8 +154,8 @@ func main() {
 			s, j := parseDict(data, i+1)
 			i = j
 			fmt.Println(s)
-		} else if !unicode.IsPrint(rune(data[i])) {
-			fmt.Printf("%x", data[i])
+		} else {
+			continue
 		}
 	}
 	return
