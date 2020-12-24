@@ -30,7 +30,9 @@ func parseString(data string, index int, prev int) (string, int) {
 		k--
 	}
 	l, err := strconv.Atoi(data[k+1 : index])
+	// fmt.Println(l)
 	if err != nil {
+		fmt.Println(err)
 		return " ", index + 1
 	}
 	if l == 0 {
@@ -66,7 +68,6 @@ func parseList(data string, index int) ([]interface{}, int) {
 			i = j
 		} else if data[i] == ':' && unicode.IsDigit(rune(data[i-1])) {
 			s, j := parseString(data, i, prev)
-			arr = append(arr, s)
 			i = j - 1
 			if s != " " {
 				prev = j
@@ -74,7 +75,7 @@ func parseList(data string, index int) ([]interface{}, int) {
 			}
 		} else if data[i] == 'd' {
 			s, j := parseDict(data, i+1)
-			arr = append(s)
+			arr = append(arr, s)
 			i = j
 		}
 		i++
@@ -86,10 +87,10 @@ func parseDict(data string, index int) ([]interface{}, int) {
 	i := index
 	dict := make([]interface{}, 0)
 	prev := index - 1
-	for data[i] != 'e' {
+	for i < len(data) && data[i] != 'e' {
 		if data[i] == ':' && unicode.IsDigit(rune(data[i-1])) {
 			s, j := parseString(data, i, prev)
-			i = j - 1
+			i = j
 			if s != " " {
 				prev = j
 				dict = append(dict, s)
@@ -116,20 +117,20 @@ func parseDict(data string, index int) ([]interface{}, int) {
 }
 
 func main() {
-	d, err := ioutil.ReadFile("file.torrent")
+	d, err := ioutil.ReadFile("f2.torrent")
 	if err != nil {
 		fmt.Println("err")
 		return
 	}
 	data := string(d)
 	// data := "d8:announce40:udp://tracker.leechers-paradise.org:696913:announce-liste"
-	// data := "d4:infod5:filesld6:lengthi140e4:pathl21:Big Buck Bunny.en.srted6:lengthi276134947e4:pathl18:Big Buck Bunny.mp4ed6:lengthi310380e4:pathl10:poster.jpgeeeeeee"
-	// data = "d3:nam2:ome"
-	prev := 0
+	// data = "d4:enc84:infoe"
+	// data = "d5:filesld6:lengthi140e4:pathl21:Big Buck Bunny.en.srteed6:lengthi276134947e4:pathl18:Big Buck Bunny.mp4eed6:lengthi310380e4:pathl10:poster.jpgeee"
+	prev := -1
 	for i := 0; i < len(data); i++ {
 		if data[i] == ':' && unicode.IsDigit(rune(data[i-1])) {
 			s, j := parseString(data, i, prev)
-			i = j - 1
+			i = j
 			if s != " " {
 				prev = j
 			}
@@ -157,6 +158,7 @@ func main() {
 		} else {
 			continue
 		}
+		// fmt.Println(i)
 	}
 	return
 }
