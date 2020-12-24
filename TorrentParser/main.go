@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"strconv"
 	"unicode"
 )
@@ -95,9 +96,9 @@ func parseDict(data string, index int) ([]interface{}, int) {
 				prev = j
 				dict = append(dict, s)
 			}
-			if s[len(s)-1] == 'e' {
-				i++
-			}
+			// if s[len(s)-1] == 'e' {
+			// 	i++
+			// }
 		} else if data[i] == 'i' {
 			s, j := parseInt(data, i+1)
 			i = j
@@ -117,15 +118,13 @@ func parseDict(data string, index int) ([]interface{}, int) {
 }
 
 func main() {
-	d, err := ioutil.ReadFile("f2.torrent")
+	fname := os.Args[1]
+	d, err := ioutil.ReadFile(fname)
 	if err != nil {
 		fmt.Println("err")
 		return
 	}
 	data := string(d)
-	// data := "d8:announce40:udp://tracker.leechers-paradise.org:696913:announce-liste"
-	// data = "d4:enc84:infoe"
-	// data = "d5:filesld6:lengthi140e4:pathl21:Big Buck Bunny.en.srteed6:lengthi276134947e4:pathl18:Big Buck Bunny.mp4eed6:lengthi310380e4:pathl10:poster.jpgeee"
 	prev := -1
 	for i := 0; i < len(data); i++ {
 		if data[i] == ':' && unicode.IsDigit(rune(data[i-1])) {
@@ -158,7 +157,6 @@ func main() {
 		} else {
 			continue
 		}
-		// fmt.Println(i)
 	}
 	return
 }

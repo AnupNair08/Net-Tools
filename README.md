@@ -46,3 +46,7 @@ A simple command line tool that lets you download resources over HTTP. The tool 
 cd Scanner
 go run main.go sitename path resource
 ```
+
+## Torrent Parser
+
+A tool that lets you parse torrent files to a readable format. Shows the list of trackers, files and other meta-data realted to the torrent
