@@ -31,9 +31,7 @@ func parseString(data string, index int, prev int) (string, int) {
 		k--
 	}
 	l, err := strconv.Atoi(data[k+1 : index])
-	// fmt.Println(l)
 	if err != nil {
-		fmt.Println(err)
 		return " ", index + 1
 	}
 	if l == 0 {
@@ -69,6 +67,7 @@ func parseList(data string, index int) ([]interface{}, int) {
 			i = j
 		} else if data[i] == ':' && unicode.IsDigit(rune(data[i-1])) {
 			s, j := parseString(data, i, prev)
+			arr = append(arr, s)
 			i = j - 1
 			if s != " " {
 				prev = j
@@ -76,7 +75,7 @@ func parseList(data string, index int) ([]interface{}, int) {
 			}
 		} else if data[i] == 'd' {
 			s, j := parseDict(data, i+1)
-			arr = append(arr, s)
+			arr = append(s)
 			i = j
 		}
 		i++
@@ -88,10 +87,10 @@ func parseDict(data string, index int) ([]interface{}, int) {
 	i := index
 	dict := make([]interface{}, 0)
 	prev := index - 1
-	for i < len(data) && data[i] != 'e' {
+	for data[i] != 'e' {
 		if data[i] == ':' && unicode.IsDigit(rune(data[i-1])) {
 			s, j := parseString(data, i, prev)
-			i = j
+			i = j - 1
 			if s != " " {
 				prev = j
 				dict = append(dict, s)
@@ -129,7 +128,7 @@ func main() {
 	for i := 0; i < len(data); i++ {
 		if data[i] == ':' && unicode.IsDigit(rune(data[i-1])) {
 			s, j := parseString(data, i, prev)
-			i = j
+			i = j - 1
 			if s != " " {
 				prev = j
 			}
